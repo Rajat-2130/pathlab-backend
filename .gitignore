@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Environment variables (NEVER upload this)
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Upload folder (uploaded PDF reports)
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
