@@ -6,6 +6,8 @@ const morgan = require('morgan');
 const path = require('path');
 const connectDB = require('./config/db');
 const errorMiddleware = require('./middleware/error');
+const helmet = require('helmet')
+const rateLimit = require('express-rate-limit')
 
 // Route imports
 const authRoutes = require('./routes/authRoutes');
@@ -15,7 +17,24 @@ const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
 
 const app = express();
+// Security headers
+app.use(helmet())
 
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { success: false, message: 'Too many requests, please try again later.' }
+})
+app.use('/api/', limiter)
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many attempts, please try again later.' }
+})
+app.use('/api/auth/login', authLimiter)
+app.use('/api/auth/register', authLimiter)
 // Connect to database
 connectDB();
 
