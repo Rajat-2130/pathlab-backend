@@ -15,39 +15,10 @@ const testRoutes = require('./routes/testRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
-app.get('/api/test-email', async (req, res) => {
-  try {
-    const nodemailer = require('nodemailer')
 
-    const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    })
-
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: process.env.EMAIL_USER,
-      subject: 'Production Email Test',
-      html: '<h1>Email works on production!</h1>',
-    })
-
-    res.json({
-      success: true,
-      message: 'Email sent!',
-      user: process.env.EMAIL_USER,
-    })
-  } catch (err) {
-    res.json({
-      success: false,
-      error: err.message,
-      user: process.env.EMAIL_USER,
-    })
-  }
-})
+// ─── App must be created FIRST ────────────────────────────
 const app = express();
+
 // Security headers
 app.use(helmet())
 
@@ -66,6 +37,7 @@ const authLimiter = rateLimit({
 })
 app.use('/api/auth/login', authLimiter)
 app.use('/api/auth/register', authLimiter)
+
 // Connect to database
 connectDB();
 
@@ -103,6 +75,45 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 
+// ─── Test Email Route ─────────────────────────────────────
+app.get('/api/test-email', async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer')
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
+      },
+    })
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: process.env.EMAIL_USER,
+      subject: 'Production Email Test',
+      html: '<h1>Email works on production!</h1>',
+    })
+
+    res.json({
+      success: true,
+      message: 'Email sent! Check your inbox.',
+      user: process.env.EMAIL_USER,
+    })
+  } catch (err) {
+    res.json({
+      success: false,
+      error: err.message,
+      user: process.env.EMAIL_USER,
+    })
+  }
+})
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.status(200).json({
@@ -127,7 +138,6 @@ const server = app.listen(PORT, () => {
   console.log(`📍 Health check: http://localhost:${PORT}/api/health\n`);
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.error('UNHANDLED REJECTION:', err.message);
   server.close(() => process.exit(1));
