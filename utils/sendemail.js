@@ -1,22 +1,24 @@
-const nodemailer = require('nodemailer')
+const Brevo = require('@getbrevo/brevo')
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.BREVO_SMTP_USER,
-    pass: process.env.BREVO_SMTP_PASS,
-  },
-})
+const apiInstance = new Brevo.TransactionalEmailsApi()
+
+apiInstance.setApiKey(
+  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+)
 
 const sendEmail = async ({ to, subject, html }) => {
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to,
-    subject,
-    html,
-  })
+  const sendSmtpEmail = new Brevo.SendSmtpEmail()
+
+  sendSmtpEmail.subject = subject
+  sendSmtpEmail.htmlContent = html
+  sendSmtpEmail.sender = {
+    name: 'PathLab Diagnostics',
+    email: process.env.EMAIL_FROM_ADDRESS,
+  }
+  sendSmtpEmail.to = [{ email: to }]
+
+  await apiInstance.sendTransacEmail(sendSmtpEmail)
 }
 
 module.exports = sendEmail

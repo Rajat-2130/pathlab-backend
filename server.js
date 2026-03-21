@@ -76,34 +76,34 @@ app.use('/api/users', userRoutes);
 // ─── Test Email Route (Brevo) ─────────────────────────────
 app.get('/api/test-email', async (req, res) => {
   try {
-    const nodemailer = require('nodemailer')
-    const transporter = nodemailer.createTransport({
-      host: 'smtp-relay.brevo.com',
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.BREVO_SMTP_USER,
-        pass: process.env.BREVO_SMTP_PASS,
-      },
-    })
+    const Brevo = require('@getbrevo/brevo')
+    const apiInstance = new Brevo.TransactionalEmailsApi()
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: process.env.BREVO_SMTP_USER,
-      subject: 'PathLab Production Email Test',
-      html: '<h1>Email is working on production!</h1>',
-    })
+    apiInstance.setApiKey(
+      Brevo.TransactionalEmailsApiApiKeys.apiKey,
+      process.env.BREVO_API_KEY
+    )
+
+    const sendSmtpEmail = new Brevo.SendSmtpEmail()
+    sendSmtpEmail.subject = 'PathLab Production Email Test'
+    sendSmtpEmail.htmlContent = '<h1>Email is working on production!</h1>'
+    sendSmtpEmail.sender = {
+      name: 'PathLab Diagnostics',
+      email: process.env.EMAIL_FROM_ADDRESS,
+    }
+    sendSmtpEmail.to = [{ email: process.env.EMAIL_FROM_ADDRESS }]
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail)
 
     res.json({
       success: true,
       message: 'Email sent! Check your inbox.',
-      user: process.env.BREVO_SMTP_USER,
+      sentTo: process.env.EMAIL_FROM_ADDRESS,
     })
   } catch (err) {
     res.json({
       success: false,
       error: err.message,
-      user: process.env.BREVO_SMTP_USER,
     })
   }
 })
