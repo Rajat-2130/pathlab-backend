@@ -15,7 +15,38 @@ const testRoutes = require('./routes/testRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
+app.get('/api/test-email', async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer')
 
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    })
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_FROM,
+      to: process.env.EMAIL_USER,
+      subject: 'Production Email Test',
+      html: '<h1>Email works on production!</h1>',
+    })
+
+    res.json({
+      success: true,
+      message: 'Email sent!',
+      user: process.env.EMAIL_USER,
+    })
+  } catch (err) {
+    res.json({
+      success: false,
+      error: err.message,
+      user: process.env.EMAIL_USER,
+    })
+  }
+})
 const app = express();
 // Security headers
 app.use(helmet())

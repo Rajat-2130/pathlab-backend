@@ -121,7 +121,7 @@ const welcomeEmail = (userName) => `
       </div>
     </div>
     <div class="footer">
-      <p>PathLab Diagnostics · support@pathlab.com · +91 98765 43210</p>
+      <p>PathLab Diagnostics · rajat.tarun2003@gmail.com· +91 7905755634</p>
       <p style="margin-top:4px;">© ${new Date().getFullYear()} PathLab. All rights reserved.</p>
     </div>
   </div>
