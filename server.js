@@ -76,15 +76,14 @@ app.use('/api/users', userRoutes);
 // ─── Test Email Route (Brevo) ─────────────────────────────
 app.get('/api/test-email', async (req, res) => {
   try {
-    const Brevo = require('@getbrevo/brevo')
-    const apiInstance = new Brevo.TransactionalEmailsApi()
+    const SibApiV3Sdk = require('sib-api-v3-sdk')
+    const defaultClient = SibApiV3Sdk.ApiClient.instance
+    const apiKey = defaultClient.authentications['api-key']
+    apiKey.apiKey = process.env.BREVO_API_KEY
 
-    apiInstance.setApiKey(
-      Brevo.TransactionalEmailsApiApiKeys.apiKey,
-      process.env.BREVO_API_KEY
-    )
+    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
+    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
 
-    const sendSmtpEmail = new Brevo.SendSmtpEmail()
     sendSmtpEmail.subject = 'PathLab Production Email Test'
     sendSmtpEmail.htmlContent = '<h1>Email is working on production!</h1>'
     sendSmtpEmail.sender = {
