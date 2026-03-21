@@ -16,7 +16,6 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const userRoutes = require('./routes/userRoutes');
 
-// ─── App must be created FIRST ────────────────────────────
 const app = express();
 
 // Security headers
@@ -41,7 +40,7 @@ app.use('/api/auth/register', authLimiter)
 // Connect to database
 connectDB();
 
-// Middleware
+// CORS
 app.use(
   cors({
     origin: [
@@ -56,7 +55,6 @@ app.use(
 )
 
 app.set('trust proxy', 1)
-
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
@@ -65,7 +63,7 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Serve uploaded files statically
+// Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
@@ -75,43 +73,37 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 
-// ─── Test Email Route ─────────────────────────────────────
+// ─── Test Email Route (Brevo) ─────────────────────────────
 app.get('/api/test-email', async (req, res) => {
   try {
     const nodemailer = require('nodemailer')
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: 'smtp-relay.brevo.com',
       port: 587,
       secure: false,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.BREVO_SMTP_USER,
+        pass: process.env.BREVO_SMTP_PASS,
       },
-      tls: {
-        rejectUnauthorized: false,
-      },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 10000,
     })
 
     await transporter.sendMail({
       from: process.env.EMAIL_FROM,
-      to: process.env.EMAIL_USER,
-      subject: 'Production Email Test',
-      html: '<h1>Email works on production!</h1>',
+      to: process.env.BREVO_SMTP_USER,
+      subject: 'PathLab Production Email Test',
+      html: '<h1>Email is working on production!</h1>',
     })
 
     res.json({
       success: true,
       message: 'Email sent! Check your inbox.',
-      user: process.env.EMAIL_USER,
+      user: process.env.BREVO_SMTP_USER,
     })
   } catch (err) {
     res.json({
       success: false,
       error: err.message,
-      user: process.env.EMAIL_USER,
+      user: process.env.BREVO_SMTP_USER,
     })
   }
 })
@@ -128,7 +120,10 @@ app.get('/api/health', (req, res) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ success: false, message: `Route ${req.originalUrl} not found` });
+  res.status(404).json({
+    success: false,
+    message: `Route ${req.originalUrl} not found`
+  });
 });
 
 // Global error handler
