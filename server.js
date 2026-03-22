@@ -74,50 +74,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 
 // ─── Test Email Route (Brevo) ─────────────────────────────
-app.get('/api/test-email', async (req, res) => {
-  // Show env vars first
-  const debugInfo = {
-    apiKeyExists: !!process.env.BREVO_API_KEY,
-    apiKeyFirst10: process.env.BREVO_API_KEY?.substring(0, 10),
-    fromAddress: process.env.EMAIL_FROM_ADDRESS,
-    emailFrom: process.env.EMAIL_FROM,
-  }
 
-  try {
-    const SibApiV3Sdk = require('sib-api-v3-sdk')
-    const defaultClient = SibApiV3Sdk.ApiClient.instance
-    const apiKey = defaultClient.authentications['api-key']
-    apiKey.apiKey = process.env.BREVO_API_KEY
-
-    const apiInstance = new SibApiV3Sdk.TransactionalEmailsApi()
-    const sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail()
-
-    sendSmtpEmail.subject = 'Test'
-    sendSmtpEmail.htmlContent = '<h1>Test</h1>'
-    sendSmtpEmail.sender = {
-      name: 'PathLab',
-      email: process.env.EMAIL_FROM_ADDRESS,
-    }
-    sendSmtpEmail.to = [{ email: process.env.EMAIL_FROM_ADDRESS }]
-
-    const result = await apiInstance.sendTransacEmail(sendSmtpEmail)
-
-    res.json({
-      success: true,
-      result,
-      debugInfo,
-    })
-  } catch (err) {
-    res.json({
-      success: false,
-      error: err.message,
-      fullError: JSON.stringify(err),
-      response: err.response?.text || err.response?.body || null,
-      status: err.status || null,
-      debugInfo,
-    })
-  }
-})
 
 // Health check
 app.get('/api/health', (req, res) => {
