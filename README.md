@@ -166,6 +166,8 @@ npm run dev
 ```
 
 Frontend runs at: `http://localhost:5173`
+Frontend repo link:https://github.com/Rajat-2130/pathlab-frontend
+
 
 > The Vite proxy forwards `/api/*` requests to `http://localhost:5000` automatically — no CORS issues in dev.
 
